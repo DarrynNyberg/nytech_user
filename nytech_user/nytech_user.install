@@ -1,0 +1,352 @@
+<?php
+
+function nytech_user_enable() {
+	// field_user_notifications
+	if (!field_info_field('user_notifications')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'user_notifications',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'user_notifications',
+			'entity_type' => 'user',
+			'label' => 'Notifications for user.',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// field_user_full_name
+	if (!field_info_field('user_full_name')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'user_full_name',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'user_full_name',
+			'entity_type' => 'user',
+			'label' => 'Users full name',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+		
+	// user_birthdate
+	if (!field_info_field('user_birthdate')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'user_birthdate',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'user_birthdate',
+			'entity_type' => 'user',
+			'label' => 'Birthdate',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// field_user_phone
+	if (!field_info_field('user_image')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'user_image',
+			'type' => 'image',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'user_image',
+			'entity_type' => 'user',
+			'label' => 'Image',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			'required' => FALSE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'image',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// field_user_phone
+	if (!field_info_field('user_phone')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'user_phone',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'user_phone',
+			'entity_type' => 'user',
+			'label' => 'Phone',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// user_lock_code
+	if (!field_info_field('user_lock_code')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'user_lock_code',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'user_lock_code',
+			'entity_type' => 'user',
+			'label' => 'Lock Code',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			//'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// client_of_org
+	if (!field_info_field('client_of_org')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'client_of_org',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'client_of_org',
+			'entity_type' => 'user',
+			'label' => 'Client Of',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			//'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// staff_of_org
+	if (!field_info_field('staff_of_org')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'staff_of_org',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'staff_of_org',
+			'entity_type' => 'user',
+			'label' => 'Staff Of',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			//'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// user_ref
+	if (!field_info_field('user_ref')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'user_ref',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'user_ref',
+			'entity_type' => 'user',
+			'label' => 'User Referred by',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			//'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// registration_id
+	if (!field_info_field('registration_id')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'registration_id',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'registration_id',
+			'entity_type' => 'user',
+			'label' => 'GCM Registration ID',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			//'required' => TRUE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// stripe_customer_id
+	if (!field_info_field('stripe_customer_id')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'stripe_customer_id',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'stripe_customer_id',
+			'entity_type' => 'user',
+			'label' => 'Stripe Customer ID',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			'required' => FALSE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+	
+	// stripe_plan_id
+	if (!field_info_field('stripe_plan_id')) {
+	
+		// Create the field base.
+		$field = array(
+			'field_name' => 'stripe_plan_id',
+			'type' => 'text',
+		);
+		field_create_field($field);
+		
+		// Create the field instance on the bundle.
+		$instance = array(
+			'field_name' => 'stripe_plan_id',
+			'entity_type' => 'user',
+			'label' => 'Stripe Plan ID',
+			'bundle' => 'user',
+			// If you don't set the "required" property then the field wont be required by default.
+			'required' => FALSE,
+			'settings' => array(
+				// Here you inform either or not you want this field showing up on the registration form.
+				'user_register_form' => 0,
+			),
+			'widget' => array(
+				'type' => 'textfield',
+			),
+		);
+		field_create_instance($instance);
+	}
+
+}

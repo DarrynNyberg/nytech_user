@@ -1,0 +1,6 @@
+name = NyTech User
+description = User api management
+core = 7.x
+package = NyTech
+files[] = nytech_user.module
+dependencies[] = nytech_auth

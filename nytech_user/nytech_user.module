@@ -1,0 +1,422 @@
+<?php
+
+/*
+ * Defign the header request shorthand
+ */
+ 
+function nytech_user_menu() {
+	$items = array();
+	// api/v1/user: get user, post new user (register), and post (update) user
+	$items['api/v1/user'] = array(
+		'page callback' => 'nytech_user',
+		'access callback' => TRUE,
+		'delivery callback' => 'drupal_json_output' ,
+	);
+	$items['api/v1/password'] = array(
+		'page callback' => 'api_password_reset_email',
+		'access callback' => TRUE,
+		'delivery callback' => 'drupal_json_output' ,		
+	);
+	return $items;
+}
+
+/*
+ * This function fires off the other functions to either
+ * register, udpate, or read a user.
+ */
+function nytech_user() {
+	// auth function. Returns user id of positive int or 0.
+	$auth = nytech_api_auth();
+	$subscription_status = nytech_subscriber_check();
+	$output = array(
+		'status' => $auth['status'],
+		'uid' => $auth['uid'],
+		'message' => $auth['message'],
+		'sid' => $auth['sid'],
+		'subscription_status' => $subscription_status,
+		'subscription_message' => '',
+		'features' => array(
+			'consults' => 0,
+		),
+	);
+	
+	if($auth['uid'] > 0) {
+		
+		if($subscription_status == 1) {
+			
+			if($_SERVER['REQUEST_METHOD'] === 'POST') {
+				// Update User
+				if(!empty($_POST)) {
+					$output['data'] = put_nytech_user($auth['uid']);
+				}
+			} else {
+				// Read user
+			   $output['data'] = get_nytech_user($auth['uid']);
+			}
+			
+		} else {
+			$output['message'] = 'Your subscription is not current';
+			$output['subscription_message'] = 'Your paid subscription is not current.';
+			$output['subscription_status'] = $subscription_status;
+		}
+		
+	} else {
+		if($_SERVER['REQUEST_METHOD'] === 'POST') {
+			if(!empty($_POST)) {
+				$output= nytech_register_user($_POST);
+			}
+		}
+	}
+	
+	return $output;
+}
+  
+
+function get_nytech_user($uid, $points = 1) {
+	(object)$newUser = new StdClass;
+	
+	global $base_url;
+	$user = user_load($uid);
+	$newUser->name = $user->name;
+	$newUser->mail = $user->mail;
+	$newUser->uid = $user->uid;
+	$newUser->doctor = 0;
+	$newUser->user_lock_code = NULL;
+	$newUser->client_of_org = NULL;
+	$newUser->staff_of_org = NULL;
+	$newUser->registration_id = NULL;
+	$newUser->access = $user->access;
+	$newUser->onhours_id = api_get_user_onhours_id($user);
+	if(in_array('doctor', $user->roles)) {
+		$newUser->doctor = 1;
+	}
+	$notifications = get_user_notifications_bool($user);
+	$newUser->user_notifications = $notifications;
+	if(!empty($user->user_birthdate)) {
+		$age = $user->user_birthdate['und'][0]['value'];
+		$newUser->user_birthdate = (int)$age;
+	} else {
+		$newUser->user_birthdate = array();
+	}
+	if(!empty($user->user_image)) {
+		$newUser->user_image = $base_url . '/sites/default/files/' . $user->user_image['und'][0]['filename'];
+	} else {
+		$newUser->user_image = array();
+	}
+	if(!empty($user->user_phone)) {
+		$newUser->user_phone = $user->user_phone['und'][0]['value'];
+	}
+	
+	if(!empty($user->user_full_name)) {
+		$newUser->user_full_name = $user->user_full_name['und'][0]['value'];
+	}
+	
+	if(!empty($user->user_lock_code)) {
+		$newUser->user_lock_code = $user->user_lock_code['und'][0]['value'];
+	}
+	
+	if(!empty($user->client_of_org)) {
+		$newUser->client_of_org = $user->client_of_org['und'][0]['value'];
+	}
+	
+	if(!empty($user->registration_id)) {
+		$newUser->registration_id = $user->registration_id['und'][0]['value'];
+	}
+	
+	if(!empty($user->staff_of_org)) {
+		foreach ($user->staff_of_org['und'] as $key => $value) {
+			$newUser->staff_of_org[] = $user->staff_of_org['und'][$key]['value'];
+		}
+	}
+	
+	unset($user->pass);
+	unset($user->picture);
+	unset($user->rdf_mapping);
+	
+	$output = $newUser;
+	
+	return $output;
+}
+
+
+ 
+ function nytech_register_user() {
+ 	$output = array(
+		'message' => 'Please enter both user and password.',
+	);
+    if(!empty($_POST['email']) and !empty($_POST['password'])) {
+        require './includes/password.inc';
+            
+        $username = $_POST['email'];
+        $pass = $_POST['password'];
+		
+        if(!empty($_POST['user_birthdate'])) {
+        	$age = $_POST['user_birthdate'];
+        }
+
+		if(!empty($_POST['user_full_name'])) {
+        	$full_name = $_POST['user_full_name'];
+        }
+		
+		if(!empty($_POST['user_phone'])) {
+        	$phone = $_POST['user_phone'];
+        }
+		
+		if(!empty($_POST['registration_id'])) {
+        	$registration_id = $_POST['registration_id'];
+        }
+		
+		if(!empty($_POST['user_lock_code'])) {
+			$user_lock_code = $_POST['user_lock_code'];
+		}
+		if(!empty($_POST['pp'])) {
+			$pp = $_POST['pp'];
+		} else {
+			
+		}
+        
+        $user_by_email = user_load_by_mail($username);
+        
+        if(!empty($user_by_email)) {
+           $output = array(
+           		'status' => 401,
+                'message' => 'That email is already in use.'
+           );
+        } else {
+            $new_user = array(
+                'name' => $username,
+                'pass' => $pass, // note: do not md5 the password
+                'mail' => $username,
+                'status' => 1,
+                'init' => $username,
+                'user_notifications' => array(
+					'und' => array(
+						0 => array(
+							'value' => 0,
+						),
+					),
+				),
+				'user_birthdate' => array(
+					'und' => array(
+						0 => array(
+							'value' => $age,
+						),
+					),
+				),
+				'user_phone' => array(
+					'und' => array(
+						0 => array(
+							'value' => $phone,
+						),
+					),
+				),
+				// 'registration_id' => array(
+					// 'und' => array(
+						// 0 => array(
+							// 'value' => $registration_id,
+						// ),
+					// ),
+				// ),
+				'user_full_name' => array(
+					'und' => array(
+						0 => array(
+							'value' => ucwords($full_name),
+						),
+					),
+				),
+				'user_lock_code' => array(
+					'und' => array(
+						0 => array(
+							'value' => $user_lock_code,
+						),
+					),
+				),
+				'field_primary_provider' => array(
+					'und' => array(
+						0 => array(
+							'target_id' => $pp,
+						),
+					),
+				),
+                'roles' => array(
+                    DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+                    //3 => 'custom role',
+                ),
+            );
+			
+            
+            // The first parameter is sent blank so a new user is created.
+            $user = user_save('', $new_user);
+			$auth_array = array(
+				$username,
+				$pass,
+			);
+			
+			$auth = nytech_auth_user($auth_array);
+            
+            $output = array(
+            	'status' => 200,
+            	'uid' => $auth['uid'],
+            	'sid' => $auth['sid'],
+            	'message' => $auth['message'],
+				'data' => get_nytech_user($auth['uid']),
+			); 
+        }
+    } else {
+        $output = array(
+            'message' => 'Email name and password are required.'
+        );
+    }
+    
+    return $output;
+ }
+
+
+function put_nytech_user($uid) {
+	$user = user_load($uid);
+	$edit = array();
+	
+	if(!empty($_POST['password'])) {
+		$password = $_POST['password'];
+        $edit['pass'] = $password;
+    }
+	
+	if(!empty($_POST['user_phone'])) {
+		$phone = $_POST['user_phone'];
+        $edit['user_phone']['und'][0]['value'] = $phone;
+    }
+	
+	if(!empty($_POST['user_birthdate'])) {
+		$age = $_POST['user_birthdate'];
+        $edit['user_birthdate']['und'][0]['value'] = $age;
+    }
+	
+	if(!empty($_POST['user_notifications'])) {
+		$notifications = $_POST['user_notifications'];
+		$edit['user_notifications']['und'][0]['value'] = $notifications;
+	}
+	
+	if(!empty($_POST['user_full_name'])) {
+		$user_full_name = $_POST['user_full_name'];
+		$edit['user_full_name']['und'][0]['value'] = $user_full_name;
+	}
+	
+	if(!empty($_POST['user_lock_code'])) {
+		$user_lock_code = $_POST['user_lock_code'];
+		$edit['user_lock_code']['und'][0]['value'] = $user_lock_code;
+	}
+	
+	if(!empty($_POST['client_of_org'])) {
+		$client_of_org = $_POST['client_of_org'];
+		$edit['client_of_org']['und'][0]['value'] = $client_of_org;
+	}
+	
+	if(!empty($_POST['registration_id'])) {
+		$registration_id = $_POST['registration_id'];
+		$edit['registration_id']['und'][0]['value'] = $registration_id;
+	}
+	
+	if(!empty($_POST['staff_of_org'])) {
+		
+		$staffArray = $_POST['staff_of_org'];
+		
+		foreach ($staffArray as $key => $value) {
+			$staff_of_org = $value; //$_POST['staff_of_org'][$key];
+			$edit['staff_of_org']['und'][]['value'] = $value;
+		}
+	}
+	
+    if(!empty($_POST['user_image'])) {
+    		
+    	$post = $_POST['user_image'];
+    	$image_data = explode(',', $post);
+		$data = base64_decode($image_data[1]);   
+		//$data = base64_decode($post);   
+	
+		$finfo = finfo_open();
+	    $mime_type = finfo_buffer($finfo, $data, FILEINFO_MIME_TYPE);
+	    finfo_close($finfo);
+		
+	    $ext = $mime_type ? str_replace('image/', '', $mime_type) : 'png';
+	    $file_name = 'user_' . $user->uid . '_' . date('MjYgisa');
+		$file_path = 'public://' . $file_name . '.' . $ext;
+	   	$file = file_save_data($data, $file_path, FILE_EXISTS_REPLACE);
+	    
+	    $edit['user_image']['und'][0] = (array)$file;
+    }
+	//$newUser = user_save($user, $edit);
+	$output = put_nytech_entity('user', $uid, $edit);
+	$output = get_nytech_user($uid);
+	
+	return $output;
+}
+
+function get_user_notifications_bool($user) {
+		
+	$notifications = 0;
+	//$user = user_load($uid);
+	if(!empty($user->user_notifications)) {
+		$notifications = $user->user_notifications['und'][0]['value'];
+	}
+	
+	return (int)$notifications;
+}
+
+function api_password_reset_email() {
+	$output = array(
+		'status' => 401,
+		'message' => 'Email not assigned to an account.',
+	);
+	if(!empty($_POST['email'])) {
+		$email = $_POST['email'];
+		$user = user_load_by_mail($email);
+		if($user) {
+			_user_mail_notify('password_reset', $user);
+			$output = array(
+				'status' => 200,
+				'message' => 'Password reset sent to your email.',
+			);
+		}
+	}
+	
+	return $output;
+	
+}
+
+function ref_links() {
+	global $user;
+	$user = user_load($user->uid);
+	
+	if(!empty($user->staff_of_org)) {
+		$pre = '<ul class="menu nav">';
+		
+		$loop = '';
+		
+		foreach ($user->staff_of_org['und'] as $key => $value) {
+			$org_eid = $value['value'];
+			$loop .= '<li>' . l('Ref: ' . get_org_name($org_eid), 'portal/org/' . $org_eid . '/user_ref_form', array(
+					'query' => array(
+						'user_ref' => $user->mail,
+					),
+				)) . '</li>';
+		}
+		
+		$post = '</ul>';
+		$output = $pre . $loop . $post;
+	} else {
+		$output = '';
+	}
+	
+	
+	return $output;
+}
+
+function _user_name($user) {
+	if(is_object($user)) {
+		// nothing... already loaded.
+	} else {
+		$user = user_load($user);
+	}
+	$name = $user->user_full_name['und'][0]['value'];
+	return $name;
+}
